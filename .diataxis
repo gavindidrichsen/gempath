@@ -1,0 +1,7 @@
+{
+  "readme": "docs/README.md",
+  "howtos": "docs/how-to",
+  "tutorials": "docs/tutorials",
+  "explanations": "docs/explanations",
+  "adr": "docs/exp/adr"
+}

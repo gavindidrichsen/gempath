@@ -1,0 +1,29 @@
+inherit_from: .rubocop_todo.yml
+
+AllCops:
+  TargetRubyVersion: 2.5
+  NewCops: enable
+  SuggestExtensions: false
+
+Style/Documentation:
+  Enabled: false  # We have good separation of concerns and clear file names
+
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*'  # Test blocks can be longer for readability
+
+Layout/LineLength:
+  Max: 120
+  Exclude:
+    - 'spec/**/*'  # Allow longer lines in tests for readability
+
+Style/StringLiterals:
+  EnforcedStyle: single_quotes
+
+Style/FrozenStringLiteralComment:
+  Enabled: true
+  EnforcedStyle: always
+
+Security/Eval:
+  Exclude:
+    - 'spec/spec_helper.rb'  # Standard Ruby pattern for capturing stdout/stderr
