@@ -30,6 +30,17 @@ RSpec.describe Gempath::CLI do
         expect(output).to match(/gempath analyze \[OPTIONS\]\s+# An/)
       end
 
+      it 'shows error for invalid command' do
+        output = `#{gempath_cmd} invalid_command 2>&1`
+        expect(output).to include('Could not find command "invalid_command".')
+      end
+
+      it 'shows error when required option is missing' do
+        output = `#{gempath_cmd} generate 2>&1`
+        expect(output).to include('No value provided for required options')
+        expect(output).to include('--name')
+      end
+
       it 'shows help for analyze command' do
         output = `#{gempath_cmd} help analyze 2>&1`
         expect(output).to include('Usage:')
