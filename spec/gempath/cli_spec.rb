@@ -25,8 +25,9 @@ RSpec.describe Gempath::CLI do
     context 'when using the CLI binary' do
       it 'shows usage information when no command is given' do
         output = `#{gempath_cmd} 2>&1`
-        expect(output).to match(/Commands:/)
-        expect(output).to match(/gempath analyze \[OPTIONS\]\s+# Analyze depen/)
+        expect(output).to include('No command provided. Available commands:')
+        expect(output).to include('Commands:')
+        expect(output).to match(/gempath analyze \[OPTIONS\]\s+# An/)
       end
 
       it 'shows help for analyze command' do

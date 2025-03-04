@@ -53,8 +53,6 @@ RSpec.configure do |config|
   # Ensure ARGV has a valid command for CLI tests
   config.before(:each) do
     # Only set default ARGV if it's empty or starts with a flag
-    if ARGV.empty? || (ARGV.first && ARGV.first.start_with?('-'))
-      stub_const('ARGV', ['analyze'])
-    end
+    stub_const('ARGV', ['analyze']) if ARGV.empty? || ARGV.first&.start_with?('-')
   end
 end
