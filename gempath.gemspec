@@ -5,13 +5,13 @@ require_relative 'lib/gempath/version'
 Gem::Specification.new do |spec|
   spec.name          = 'gempath'
   spec.version       = Gempath::VERSION
-  spec.authors       = ['Your Name']
-  spec.email         = ['your.email@example.com']
+  spec.authors       = ['Gavin Didrichsen']
+  spec.email         = ['gavin.didrichsen@gmail.com']
 
   spec.summary       = 'Analyze gem dependencies and their relationships'
   spec.description   = 'A tool for analyzing gem dependencies, showing dependency paths,' \
                         'versions, and relationships between gems in a Gemfile.lock'
-  spec.homepage      = 'https://github.com/yourusername/gempath'
+  spec.homepage      = 'https://github.com/gavindidrichsen/gempath'
   spec.license       = 'MIT'
   spec.required_ruby_version = '>= 2.5.0'
 
