@@ -33,4 +33,5 @@
 * [ADR-0003](exp/adr/0003-group-gems-by-source-in-generated-gemfiles.md) - Group Gems by Source in Generated Gemfiles
 * [ADR-0003](exp/adr/0003-json-output-format-for-dependency-analysis.md) - JSON Output Format for Dependency Analysis
 * [ADR-0004](exp/adr/0004-store-sample-lock-files-in-spec-fixtures.md) - Store Sample Lock Files in spec/fixtures
+* [ADR-0005](exp/adr/0005-use-shields-io-for-coverage-badge.md) - Use shields.io for coverage badge
 <!-- adrlogstop -->

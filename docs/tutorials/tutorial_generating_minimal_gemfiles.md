@@ -5,9 +5,9 @@
 After completing this tutorial, you will be able to:
 
 - Generate minimal Gemfiles for specific gems
-- Organize gems by their source
-- Include Ruby version requirements
-- Handle path-based and custom source gems
+- Handle gems from multiple sources
+- Include proper version constraints
+- Specify Ruby version requirements
 
 ## Prerequisites
 
@@ -15,32 +15,53 @@ Before starting this tutorial, you should have:
 
 - Ruby installed on your system
 - The gempath repository checked out locally
-- Basic familiarity with Ruby gems and Bundler
+- Basic familiarity with Bundler and Gemfiles
 
 ## Tutorial
 
-### 1. Setting Up
+### 1. Getting Help
 
-First, let's use the sample Gemfile.lock that comes with the repository. From the root of your checked-out gempath repository:
+Let's start by exploring the generate command:
 
 ```bash
-# Make sure you're in the gempath repository directory
-cd gempath
-
-# We'll use the sample Gemfile.lock provided in spec/fixtures
-ls spec/fixtures/sample.lock
+# Show help for the generate command
+gempath help generate
 ```
+
+This shows all available options, including:
+
+- `--name`: The gem to generate a Gemfile for (required)
+- `--filepath`: Path to the Gemfile.lock (default: ./Gemfile.lock)
+- `--ruby-version`: Ruby version to use
 
 ### 2. Basic Gemfile Generation
 
-Let's start by generating a minimal Gemfile for the `puppet` gem:
+Let's generate a Gemfile for a simple gem like `thor`:
 
 ```bash
-# Generate a Gemfile for puppet and its dependencies
-gempath generate --name puppet --filepath spec/fixtures/sample.lock
+# Use the sample Gemfile.lock
+gempath generate -f spec/fixtures/sample.lock -n thor
 ```
 
-This produces a clean, organized Gemfile:
+The output will be a minimal Gemfile containing:
+
+- The gem source (rubygems.org)
+- The gem and its version
+- Any direct dependencies (thor has none)
+
+### 3. Handling Multiple Sources
+
+Now let's try a more complex case with `puppet`, which comes from a custom gem source:
+
+```bash
+gempath generate -f spec/fixtures/sample.lock -n puppet
+```
+
+Notice how the generated Gemfile:
+
+- Groups gems by their source
+- Uses source blocks for custom gem servers
+- Maintains all version constraints
 
 ```ruby
 source 'https://rubygems.org'
@@ -57,56 +78,62 @@ source 'https://rubygems.org/' do
 end
 ```
 
-Notice how:
+### 4. Specifying Ruby Version
 
-- The default rubygems.org source is always first
-- Gems from custom sources are grouped in `source` blocks
-- Version constraints are preserved
-- Dependencies are properly organized
-
-### 3. Working with Path Sources
-
-Let's try a gem with a path source:
+You can also generate a Gemfile with a specific Ruby version:
 
 ```bash
-gempath generate --name diataxis --filepath spec/fixtures/sample.lock
+gempath generate -f spec/fixtures/sample.lock -n puppet --ruby-version 3.2.0
 ```
 
-This produces:
-
-```ruby
-source 'https://rubygems.org'
-
-gem 'diataxis', path: '/path/to/diataxis'
-```
-
-### 4. Adding Ruby Version Requirements
-
-You can also specify a Ruby version:
-
-```bash
-gempath generate --name puppet --filepath spec/fixtures/sample.lock --ruby-version 3.2.0
-```
-
-Produces:
+This adds a Ruby version requirement to the Gemfile:
 
 ```ruby
 ruby '3.2.0'
 
 source 'https://rubygems.org'
-
-source 'https://rubygems-puppetcore.puppet.com/' do
-  gem 'puppet', '8.11.0'
-  # ... dependencies
-end
+# ... rest of the Gemfile
 ```
+
+### 5. Complex Dependencies
+
+Let's look at a gem with many dependencies, like `rspec`:
+
+```bash
+gempath generate -f spec/fixtures/sample.lock -n rspec
+```
+
+The generated Gemfile will include:
+
+- All direct dependencies (rspec-core, rspec-expectations, rspec-mocks)
+- Their version constraints
+- Any shared dependencies
 
 ## What We've Learned
 
 In this tutorial, you've learned how to:
 
 - Generate minimal Gemfiles for specific gems
-- Handle different gem sources (rubygems.org, custom servers, paths)
-- Preserve version constraints
-- Include Ruby version requirements
-- Organize gems by their source for better maintainability
+- Handle gems from multiple sources
+- Include proper version constraints
+- Add Ruby version requirements
+- Deal with complex dependency chains
+
+## Next Steps
+
+Try these exercises:
+
+1. Generate Gemfiles for different types of gems:
+   - A gem with git dependencies
+   - A gem with path dependencies
+   - A gem from a private source
+
+2. Compare generated Gemfiles:
+   - Look at how version constraints differ
+   - See how sources are organized
+   - Understand dependency grouping
+
+3. Use generated Gemfiles:
+   - Create isolated test environments
+   - Verify gem compatibility
+   - Debug dependency issues
