@@ -15,15 +15,11 @@ if ENV['COVERAGE']
     # Set minimum coverage thresholds
     minimum_coverage line: 87, branch: 64
 
-    # Generate HTML and JSON reports locally, badge will be generated in CI
-    formatters = [
+    # Generate HTML and JSON reports
+    formatter SimpleCov::Formatter::MultiFormatter.new([
       SimpleCov::Formatter::HTMLFormatter,
       SimpleCov::Formatter::JSONFormatter
-    ]
-    # Only add badge formatter in CI environment where ImageMagick is available
-    formatters << SimpleCov::Formatter::BadgeFormatter if ENV['CI']
-
-    formatter SimpleCov::Formatter::MultiFormatter.new(formatters)
+    ])
   end
 end
 

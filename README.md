@@ -1,6 +1,6 @@
 # Gempath
 
-[![Coverage](https://gavindidrichsen.github.io/gempath/coverage/coverage.svg)](https://gavindidrichsen.github.io/gempath/coverage)
+[![Coverage](https://img.shields.io/badge/coverage-87%25-green.svg)](https://gavindidrichsen.github.io/gempath/coverage)
 
 Gempath is a tool for analyzing gem dependencies in your Ruby projects. It helps you understand:
 
