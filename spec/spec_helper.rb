@@ -22,7 +22,7 @@ if ENV['COVERAGE']
     ]
     # Only add badge formatter in CI environment where ImageMagick is available
     formatters << SimpleCov::Formatter::BadgeFormatter if ENV['CI']
-    
+
     formatter SimpleCov::Formatter::MultiFormatter.new(formatters)
   end
 end
