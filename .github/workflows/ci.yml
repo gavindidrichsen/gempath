@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [ main, master ]
 
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -72,13 +78,21 @@ jobs:
         path: coverage/
         retention-days: 30
 
-    - name: Deploy coverage report to GitHub Pages
+    - name: Setup Pages
       if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-      uses: JamesIves/github-pages-deploy-action@v4
+      uses: actions/configure-pages@v4
+
+    - name: Upload Pages artifact
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      uses: actions/upload-pages-artifact@v3
       with:
-        folder: coverage
-        target-folder: coverage
-        clean: true
+        path: coverage
+
+    - name: Deploy to GitHub Pages
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      uses: actions/deploy-pages@v4
+      with:
+        path: coverage
 
     - name: Comment on PR with coverage report location
       if: github.event_name == 'pull_request'
