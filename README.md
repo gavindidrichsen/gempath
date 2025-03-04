@@ -48,6 +48,37 @@ gempath analyze --name base64  # or -n for short
 gempath analyze --filepath /path/to/Gemfile.lock --name rails  # or -f for short
 ```
 
+For example, run the following from the root of the repository:
+
+```bash
+➜  gempath git:(add_full_gem) gempath analyze --name facter --filepath spec/fixtures/sample.lock
+{
+  "facter": {
+    "name": "facter",
+    "version": "4.11.0",
+    "dependencies": {
+      "hocon": "~> 1.3",
+      "thor": ">= 1.0.1, < 1.3"
+    },
+    "source": {
+      "type": "rubygems",
+      "remotes": [
+        "https://rubygems-puppetcore.puppet.com/"
+      ]
+    },
+    "consumer_paths": [
+      "bolt -> puppet -> facter",
+      "puppet -> facter",
+      "puppet_litmus -> bolt -> puppet -> facter"
+    ],
+    "direct_consumers": [
+      "puppet"
+    ]
+  }
+}
+➜  gempath git:(add_full_gem) ✗ 
+```
+
 ### gempath generate
 
 ```bash
@@ -67,20 +98,21 @@ The `generate` command creates a clean, organized Gemfile that:
 - Maintains proper version constraints
 - Follows Bundler's conventions for source blocks
 
-Example output:
+For example, run the following command from the root of the repository:
 
 ```ruby
+➜  gempath git:(add_full_gem) ✗ gempath generate --name facter --filepath spec/fixtures/sample.lock 
 source 'https://rubygems.org'
 
-source 'https://custom-source.com' do
-  gem 'special-gem', '1.0.0'
+source 'https://rubygems-puppetcore.puppet.com/' do
+  gem 'facter', '4.11.0'
 end
 
-gem 'path-gem', path: '../path/to/gem'
-
-git 'https://github.com/org/repo' do
-  gem 'git-gem'
+source 'https://rubygems.org/' do
+  gem 'hocon', '~> 1.3'
+  gem 'thor', '>= 1.0.1, < 1.3'
 end
+➜  gempath git:(add_full_gem) 
 ```
 
 This is particularly useful when you need to:

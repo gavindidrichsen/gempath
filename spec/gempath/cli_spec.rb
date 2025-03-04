@@ -2,26 +2,92 @@
 
 require 'spec_helper'
 require 'gempath/cli'
+require 'tmpdir'
 
 RSpec.describe Gempath::CLI do
   let(:cli) { described_class.new }
   let(:sample_lockfile) { File.join('spec', 'fixtures', 'sample.lock') }
+  let(:gempath_cmd) { "#{RbConfig.ruby} #{File.expand_path('../../bin/gempath', __dir__)}" }
 
-  describe '#analyze' do
-    context 'when given a specific gem' do
-      it 'outputs the analysis for that gem' do
-        output = JSON.parse(capture(:stdout) { cli.invoke(:analyze, [], name: 'bolt', filepath: sample_lockfile) })
-        expect(output).to include('bolt' => include('name' => 'bolt'))
+  describe 'command validation' do
+    context 'when using the Ruby API' do
+      it 'shows usage when no command is provided' do
+        stub_const('ARGV', ['-f', 'sample.lock', '-n', 'facter'])
+        expect { described_class.new }.to output(/Available commands/).to_stdout.and raise_error(SystemExit)
+      end
+
+      it 'allows valid commands to proceed' do
+        stub_const('ARGV', ['analyze', '-f', 'sample.lock', '-n', 'facter'])
+        expect { described_class.new }.not_to raise_error
       end
     end
 
-    context 'when no gem is specified' do
-      it 'outputs the analysis for all gems' do
-        output = JSON.parse(capture(:stdout) { cli.invoke(:analyze, [], filepath: sample_lockfile) })
-        expect(output).to include(
-          'bolt' => include('name' => 'bolt'),
-          'puppet' => include('name' => 'puppet')
-        )
+    context 'when using the CLI binary' do
+      it 'shows usage information when no command is given' do
+        output = `#{gempath_cmd} 2>&1`
+        expect(output).to include('No command provided. Available commands:')
+        expect(output).to include('Commands:')
+        expect(output).to match(/gempath analyze \[OPTIONS\]\s+# An/)
+      end
+
+      it 'shows error for invalid command' do
+        output = `#{gempath_cmd} invalid_command 2>&1`
+        expect(output).to include('Could not find command "invalid_command".')
+      end
+
+      it 'shows error when required option is missing' do
+        output = `#{gempath_cmd} generate 2>&1`
+        expect(output).to include('No value provided for required options')
+        expect(output).to include('--name')
+      end
+
+      it 'shows help for analyze command' do
+        output = `#{gempath_cmd} help analyze 2>&1`
+        expect(output).to include('Usage:')
+        expect(output).to include('gempath analyze [OPTIONS]')
+        expect(output).to include('Description:')
+        expect(output).to include('`gempath analyze` analyzes dependencies')
+        expect(output).to include('Options:')
+        expect(output).to include('--name')
+        expect(output).to include('--filepath')
+      end
+    end
+  end
+
+  describe '#analyze' do
+    context 'when using the Ruby API' do
+      context 'when given a specific gem' do
+        it 'outputs the analysis for that gem' do
+          output = JSON.parse(capture(:stdout) { cli.invoke(:analyze, [], name: 'bolt', filepath: sample_lockfile) })
+          expect(output).to include('bolt' => include('name' => 'bolt'))
+        end
+      end
+
+      context 'when no gem is specified' do
+        it 'outputs the analysis for all gems' do
+          output = JSON.parse(capture(:stdout) { cli.invoke(:analyze, [], filepath: sample_lockfile) })
+          expect(output).to include(
+            'bolt' => include('name' => 'bolt'),
+            'puppet' => include('name' => 'puppet')
+          )
+        end
+      end
+    end
+
+    context 'when using the CLI binary' do
+      around do |example|
+        Dir.mktmpdir do |dir|
+          Dir.chdir(dir) do
+            example.run
+          end
+        end
+      end
+
+      it 'shows helpful error message when Gemfile.lock is not found' do
+        output = `#{gempath_cmd} analyze 2>&1`
+        expect(output).to include("No Gemfile.lock found at 'Gemfile.lock'")
+        expect(output).to include('To specify a different Gemfile.lock location:')
+        expect(output).to include('gempath analyze -f /path/to/Gemfile.lock')
       end
     end
   end

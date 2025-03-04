@@ -11,6 +11,21 @@ module Gempath
       end
     end
 
+    no_commands do
+      def ensure_command_provided
+        return if ARGV.first && !ARGV.first.start_with?('-')
+
+        puts "No command provided. Available commands:\n\n"
+        help
+        exit 1
+      end
+    end
+
+    def initialize(*args)
+      super
+      ensure_command_provided
+    end
+
     def help(*)
       super
     end
@@ -38,16 +53,13 @@ module Gempath
         * All dependency paths leading to this gem\n
       Examples:
 
-        # Analyze all gems using Gemfile.lock in current directory:
-
+        # Analyze all gems using Gemfile.lock in current directory:\n
           gempath analyze
 
-        # Analyze aws-sdk-core using Gemfile.lock in current directory:
-
+        # Analyze aws-sdk-core using Gemfile.lock in current directory:\n
           gempath analyze --name aws-sdk-core
 
-        # Analyze rails using a specific Gemfile.lock:
-
+        # Analyze rails using a specific Gemfile.lock:\n
           gempath analyze --name rails --filepath /path/to/Gemfile.lock
     LONGDESC
     def analyze(*)
