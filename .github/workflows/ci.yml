@@ -48,6 +48,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
     steps:
     - uses: actions/checkout@v4
     
@@ -78,3 +79,17 @@ jobs:
         folder: coverage
         target-folder: coverage
         clean: true
+
+    - name: Comment on PR with coverage report location
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const comment = '📊 **Coverage Report Available**\n\nTo view the coverage report for this PR:\n1. Go to the Actions tab\n2. Click on this workflow run\n3. Scroll down to Artifacts\n4. Download `coverage-report-pr-' + context.issue.number + '`\n5. Extract the zip file\n6. Open `coverage/index.html` in your browser'
+          
+          github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+            body: comment
+          })

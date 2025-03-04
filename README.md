@@ -15,7 +15,7 @@ gem install gempath
 
 ## Usage
 
-The following sections show quick-start usage.  For more detaile information including tutorials and design decisions, see <docs/README.md>.
+The following sections show quick-start usage.  For more detaile information including tutorials and design decisions, see [docs/README.md](./docs/README.md).
 
 ### gempath help
 
