@@ -64,11 +64,15 @@ jobs:
         ruby-version: '3.2'
         bundler-cache: true
     
+    - name: Install ImageMagick
+      run: sudo apt-get update && sudo apt-get install -y imagemagick
+
     - name: Run tests with coverage
       run: |
-        bundle exec rake spec
+        COVERAGE=true CI=true bundle exec rake spec
       env:
         COVERAGE: true
+        CI: true
     
     - name: Upload coverage report artifact
       uses: actions/upload-artifact@v4
