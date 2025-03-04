@@ -2,9 +2,6 @@
 
 if ENV['COVERAGE']
   require 'simplecov'
-  require 'simplecov-html'
-  require 'simplecov-json'
-  require 'simplecov-badge'
 
   SimpleCov.start do
     add_filter '/spec/'
@@ -15,11 +12,8 @@ if ENV['COVERAGE']
     # Set minimum coverage thresholds
     minimum_coverage line: 87, branch: 64
 
-    # Generate HTML and JSON reports
-    formatter SimpleCov::Formatter::MultiFormatter.new([
-                                                         SimpleCov::Formatter::HTMLFormatter,
-                                                         SimpleCov::Formatter::JSONFormatter
-                                                       ])
+    # Generate HTML report
+    formatter SimpleCov::Formatter::HTMLFormatter
   end
 end
 
