@@ -2,6 +2,10 @@
 
 if ENV['COVERAGE']
   require 'simplecov'
+  require 'simplecov-html'
+  require 'simplecov-json'
+  require 'simplecov-badge'
+
   SimpleCov.start do
     add_filter '/spec/'
     add_filter '/vendor/'
@@ -10,6 +14,16 @@ if ENV['COVERAGE']
 
     # Set minimum coverage thresholds
     minimum_coverage line: 87, branch: 64
+
+    # Generate HTML and JSON reports locally, badge will be generated in CI
+    formatters = [
+      SimpleCov::Formatter::HTMLFormatter,
+      SimpleCov::Formatter::JSONFormatter
+    ]
+    # Only add badge formatter in CI environment where ImageMagick is available
+    formatters << SimpleCov::Formatter::BadgeFormatter if ENV['CI']
+
+    formatter SimpleCov::Formatter::MultiFormatter.new(formatters)
   end
 end
 
