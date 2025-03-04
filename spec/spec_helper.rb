@@ -49,4 +49,12 @@ RSpec.configure do |config|
 
   # Include CLI helpers
   config.include CliHelpers
+
+  # Ensure ARGV has a valid command for CLI tests
+  config.before(:each) do
+    # Only set default ARGV if it's empty or starts with a flag
+    if ARGV.empty? || (ARGV.first && ARGV.first.start_with?('-'))
+      stub_const('ARGV', ['analyze'])
+    end
+  end
 end
