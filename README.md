@@ -14,7 +14,8 @@ Gempath is a tool for analyzing gem dependencies in your Ruby projects. It helps
 ```bash
 git clone https://github.com/gavindidrichsen/gempath.git
 cd gempath
-gem install gempath
+gem build gempath.gemspec
+gem install *.gem
 ```
 
 ## Usage
