@@ -46,6 +46,8 @@ jobs:
 
   coverage:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
     - uses: actions/checkout@v4
     
@@ -61,10 +63,18 @@ jobs:
       env:
         COVERAGE: true
     
-    - name: Upload coverage report
+    - name: Upload coverage report artifact
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: coverage-report
+        name: coverage-report-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main' }}
         path: coverage/
         retention-days: 30
+
+    - name: Deploy coverage report to GitHub Pages
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        folder: coverage
+        target-folder: coverage
+        clean: true
