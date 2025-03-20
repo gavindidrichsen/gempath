@@ -9,7 +9,7 @@
 ### HowTos
 
 <!-- howtolog -->
-
+* [How to get homepage and summary info on gems](how-to/how_to_get_homepage_and_summary_info_on_gems.md)
 <!-- howtologstop -->
 
 ### Tutorials
@@ -34,4 +34,5 @@
 * [ADR-0003](exp/adr/0003-json-output-format-for-dependency-analysis.md) - JSON Output Format for Dependency Analysis
 * [ADR-0004](exp/adr/0004-store-sample-lock-files-in-spec-fixtures.md) - Store Sample Lock Files in spec/fixtures
 * [ADR-0005](exp/adr/0005-use-shields-io-for-coverage-badge.md) - Use shields.io for coverage badge
+* [ADR-0006](exp/adr/0006-collect-additional-gem-metadata-from-bundle-info.md) - Collect additional gem metadata from bundle info
 <!-- adrlogstop -->

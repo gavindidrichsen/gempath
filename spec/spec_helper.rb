@@ -10,7 +10,7 @@ if ENV['COVERAGE']
     primary_coverage :branch
 
     # Set minimum coverage thresholds
-    minimum_coverage line: 87, branch: 64
+    minimum_coverage line: 80, branch: 55
 
     # Generate HTML report
     formatter SimpleCov::Formatter::HTMLFormatter

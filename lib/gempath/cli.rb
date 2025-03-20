@@ -5,6 +5,7 @@ require 'gempath'
 
 module Gempath
   class CLI < Thor
+    # Consider breaking this class into smaller components or modules to reduce its length.
     class << self
       def exit_on_failure?
         true
@@ -39,6 +40,7 @@ module Gempath
     desc 'analyze [OPTIONS]', 'Analyze dependencies in Gemfile.lock'
     method_option :name, aliases: '-n', type: :string,
                          desc: 'Name of the gem to analyze'
+    method_option :debug, aliases: '-d', type: :boolean, desc: 'Enable debug mode to include additional gem information'
     long_desc <<~LONGDESC
       `gempath analyze` analyzes dependencies and relationships in your Gemfile.lock.
 
@@ -66,7 +68,7 @@ module Gempath
       # Thor will handle unknown arguments automatically
 
       analyzer = Gempath::Analyzer.new(options[:filepath])
-      result = analyzer.analyze(options[:name])
+      result = analyzer.analyze(options[:name], options[:debug])
       puts JSON.pretty_generate(result)
     rescue Gempath::Error => e
       raise Thor::Error,
