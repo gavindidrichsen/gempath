@@ -59,6 +59,8 @@ For example, run the following from the root of the repository:
   "facter": {
     "name": "facter",
     "version": "4.11.0",
+    "homepage": "Homepage information is available when using the -d flag",
+    "summary": "Summary information is available when using the -d flag",
     "dependencies": {
       "hocon": "~> 1.3",
       "thor": ">= 1.0.1, < 1.3"
@@ -80,6 +82,42 @@ For example, run the following from the root of the repository:
   }
 }
 ➜  gempath git:(add_full_gem) ✗ 
+```
+
+Further, if you add the `--debug` flag you will also see extra `bundle info`, in particular the `homepage` and `summary` for a gem making it easier to identify the owner of a gem.  For example, adding the `--debug` to the above:
+
+```bash
+➜  bolt-private git:(feat_add_puppetcore) ✗ gempath analyze --name facter --debug
+{
+  "facter": {
+    "name": "facter",
+    "version": "4.11.0",
+    "homepage": "https://github.com/puppetlabs/facter",
+    "summary": "Facter, a system inventory tool",
+    "dependencies": {
+      "hocon": "~> 1.3",
+      "thor": ">= 1.0.1, < 1.3"
+    },
+    "source": {
+      "type": "rubygems",
+      "remotes": [
+        "https://rubygems-puppetcore.puppet.com/"
+      ]
+    },
+    "consumer_paths": [
+      "bolt -> facter",
+      "bolt -> puppet -> facter",
+      "puppet -> facter",
+      "puppet-syntax -> puppet -> facter",
+      "puppetlabs_spec_helper -> puppet-syntax -> puppet -> facter"
+    ],
+    "direct_consumers": [
+      "bolt",
+      "puppet"
+    ]
+  }
+}
+➜  bolt-private git:(feat_add_puppetcore) ✗ 
 ```
 
 ### gempath generate
