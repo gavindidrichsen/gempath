@@ -71,5 +71,24 @@ RSpec.describe Gempath do
         end.to raise_error(Gempath::Error, /No Gemfile.lock found at 'non-existent.lock'/)
       end
     end
+
+    context 'with puppet gem' do
+      it 'returns correct information for puppet gem' do
+        result = analyzer.analyze('puppet')
+        expect(result['puppet']).to include(
+          'homepage' => 'Homepage information is available when using the -d flag',
+          'summary' => 'Summary information is available when using the -d flag'
+        )
+      end
+
+      it 'returns correct information for puppet gem when using -d debug flag' do
+        allow(analyzer).to receive(:get_gem_info).with('puppet', true).and_return(['https://github.com/puppetlabs/puppet', 'Puppet, an automated configuration management tool'])
+        result = analyzer.analyze('puppet', true)
+        expect(result['puppet']).to include(
+          'homepage' => 'https://github.com/puppetlabs/puppet',
+          'summary' => 'Puppet, an automated configuration management tool'
+        )
+      end
+    end
   end
 end

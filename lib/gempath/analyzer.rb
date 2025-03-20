@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'bundler'
+require 'open3'
 
 module Gempath
   class Analyzer
@@ -11,15 +12,18 @@ module Gempath
       @lockfile = Bundler::LockfileParser.new(File.read(lockfile_path))
     end
 
-    def analyze(gem_name = nil)
+    def analyze(gem_name = nil, debug = false)
       if gem_name
         spec = @lockfile.specs.find { |s| s.name == gem_name }
         raise Gempath::Error, "Gem '#{gem_name}' not found in Gemfile.lock" unless spec
 
+        homepage, summary = get_gem_info(gem_name, debug)
         {
           gem_name => {
             'name' => spec.name,
             'version' => spec.version.to_s,
+            'homepage' => homepage,
+            'summary' => summary,
             'dependencies' => spec.dependencies.each_with_object({}) { |d, h| h[d.name] = d.requirement.to_s },
             'source' => extract_source(spec),
             'consumer_paths' => find_consumer_paths(spec),
@@ -28,9 +32,12 @@ module Gempath
         }
       else
         @lockfile.specs.each_with_object({}) do |spec, result|
+          homepage, summary = get_gem_info(spec.name, debug)
           result[spec.name] = {
             'name' => spec.name,
             'version' => spec.version.to_s,
+            'homepage' => homepage,
+            'summary' => summary,
             'dependencies' => spec.dependencies.each_with_object({}) { |d, h| h[d.name] = d.requirement.to_s },
             'source' => extract_source(spec),
             'consumer_paths' => find_consumer_paths(spec),
@@ -98,6 +105,27 @@ module Gempath
 
     def find_direct_consumers(spec)
       @lockfile.specs.select { |s| s.dependencies.any? { |d| d.name == spec.name } }.map(&:name)
+    end
+
+    def get_gem_info(gem_name, debug = false)
+      homepage = 'Homepage information is available when using the -d flag'
+      summary = 'Summary information is available when using the -d flag'
+
+      # only if debug is true, then call "bundle info gemname"
+      if debug
+        stdout, stderr, status = Open3.capture3('bundle', 'info', gem_name)
+        raise Gempath::Error, "Failed to get info for gem '#{gem_name}': #{stderr}" unless status.success?
+
+        stdout.each_line do |line|
+          if line =~ /^\s*Homepage:\s*(.*)$/
+            homepage = ::Regexp.last_match(1).strip
+          elsif line =~ /^\s*Summary:\s*(.*)$/
+            summary = ::Regexp.last_match(1).strip
+          end
+        end
+      end
+
+      [homepage, summary]
     end
   end
 end
