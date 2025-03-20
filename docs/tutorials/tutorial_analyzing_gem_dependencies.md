@@ -8,6 +8,7 @@ After completing this tutorial, you will be able to:
 - Understand different types of gem relationships (dependencies, consumers, paths)
 - Interpret gem source information
 - Compare simple and complex dependency structures
+- Retrieve additional information such as homepage and summary when using the `-d` flag
 
 ## Prerequisites
 
@@ -119,7 +120,7 @@ Notice how:
 Let's look at a gem from a different source. The `puppet` gem comes from a custom RubyGems server:
 
 ```bash
-gempath analyze -f spec/fixtures/sample.lock -n puppet
+gempath analyze -f spec/fixtures/sample.lock -n puppet -d
 ```
 
 Pay attention to:
@@ -127,6 +128,7 @@ Pay attention to:
 - The `source` information showing `https://rubygems-puppetcore.puppet.com/`
 - The specific version requirements from its consumers
 - How it fits into the larger dependency graph
+- The `homepage` and `summary` information now included when using the `-d` debug flag
 
 ## What We've Learned
 
@@ -137,6 +139,7 @@ In this tutorial, you've learned how to:
 - Understand dependency paths
 - See where gems are sourced from
 - Identify direct consumers of a gem
+- Retrieve additional information such as homepage and summary when using the `-d` flag
 
 This output is particularly useful when:
 
@@ -161,6 +164,7 @@ Try these exercises:
    - Try adding different Ruby versions
 
 Each exercise will help you understand different aspects of:
+
 - Dependency relationships in Ruby projects
 - How to isolate gems for testing and development
 - Managing gem sources and version constraints

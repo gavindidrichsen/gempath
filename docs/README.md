@@ -9,7 +9,7 @@
 ### HowTos
 
 <!-- howtolog -->
-
+* [How to get homepage and summary info on gems](how-to/how_to_get_homepage_and_summary_info_on_gems.md)
 <!-- howtologstop -->
 
 ### Tutorials
