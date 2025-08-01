@@ -35,4 +35,5 @@
 * [ADR-0004](exp/adr/0004-store-sample-lock-files-in-spec-fixtures.md) - Store Sample Lock Files in spec/fixtures
 * [ADR-0005](exp/adr/0005-use-shields-io-for-coverage-badge.md) - Use shields.io for coverage badge
 * [ADR-0006](exp/adr/0006-collect-additional-gem-metadata-from-bundle-info.md) - Collect additional gem metadata from bundle info
+* [ADR-0007](exp/adr/0007-use-dedicated-test-branch-for-github-pages-deployment-testing.md) - Use dedicated test branch for GitHub Pages deployment testing
 <!-- adrlogstop -->

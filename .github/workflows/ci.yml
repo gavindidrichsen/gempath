@@ -2,19 +2,24 @@ name: CI
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ 
+      main, 
+      master, 
+      test-gh-pages-publish  # Special branch for testing GitHub Pages deployment
+    ]
   pull_request:
     branches: [ main, master ]
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+# Global permissions apply to all jobs by default. Individual jobs that require 
+# additional permissions must define their own permissions block, which completely 
+# overrides (not merges with) these global permissions.
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    # No additional permissions needed - inherits contents: read
     strategy:
       matrix:
         ruby-version: ['3.2']
@@ -36,6 +41,7 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
+    # No additional permissions needed - inherits contents: read
     steps:
     - uses: actions/checkout@v4
     
@@ -53,8 +59,15 @@ jobs:
   coverage:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      pull-requests: write
+      contents: read        # Required for actions/checkout
+      pull-requests: write  # Required for commenting on PRs
+      pages: write          # Required for GitHub Pages deployment
+      id-token: write       # Required for GitHub Pages deployment (OIDC)
+    env:
+      # DEPLOY_CONDITION controls when GitHub Pages deployment occurs.
+      # Production: main, master branches deploy automatically
+      # Testing: test-gh-pages-publish branch allows safe deployment testing without affecting production
+      DEPLOY_CONDITION: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/test-gh-pages-publish' }}
     steps:
     - uses: actions/checkout@v4
     
@@ -78,17 +91,17 @@ jobs:
         retention-days: 30
 
     - name: Setup Pages
-      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      if: env.DEPLOY_CONDITION == 'true'
       uses: actions/configure-pages@v4
 
     - name: Upload Pages artifact
-      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      if: env.DEPLOY_CONDITION == 'true'
       uses: actions/upload-pages-artifact@v3
       with:
         path: coverage
 
     - name: Deploy to GitHub Pages
-      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      if: env.DEPLOY_CONDITION == 'true'
       uses: actions/deploy-pages@v4
       with:
         path: coverage
