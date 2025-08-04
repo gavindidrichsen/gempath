@@ -1,0 +1,92 @@
+name: "Release Prep"
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "The target for the release. This can be a commit sha or a branch."
+        required: false
+        default: "main"
+        type: "string"
+      version:
+        description: "Version of gem to be released."
+        required: true
+        type: "string"
+
+jobs:
+  release_prep:
+    name: "Release Prep"
+    runs-on: "ubuntu-latest"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v4"
+        with:
+          ref: ${{ github.event.inputs.target }}
+          clean: true
+          fetch-depth: 0
+
+      - name: "Setup Ruby"
+        uses: "ruby/setup-ruby@v1"
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+
+      - name: "Bundle environment"
+        run: |
+          echo ::group::bundler environment
+          bundle env
+          echo ::endgroup::
+
+      - name: "Update Version"
+        run: |
+          current_version=$(ruby -e "require 'rubygems'; puts Gem::Specification::load(Dir.glob('*.gemspec').first).version.to_s")
+          normalized_version=$(echo ${{ github.event.inputs.version }} | sed "s/-/./g")
+          sed -i "s/$current_version/$normalized_version/g" $(find . -path './lib/**' -name 'version.rb' -not -path "vendor/*")
+
+      - name: "Generate changelog"
+        run: |
+          export GH_HOST=github.com
+          gh extension install chelnak/gh-changelog || gh extension upgrade chelnak/gh-changelog
+          gh changelog new --next-version v${{ github.event.inputs.version }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Run tests to ensure everything works"
+        run: |
+          bundle exec rake spec
+
+      - name: "Run RuboCop to ensure code quality"
+        run: |
+          bundle exec rubocop
+
+      - name: "Build gem to verify it can be built"
+        run: |
+          bundle exec rake build
+
+      - name: "Commit changes"
+        run: |
+          git config --local user.email "${{ github.repository_owner }}@users.noreply.github.com"
+          git config --local user.name "GitHub Actions"
+          git add .
+          git commit -m "Release prep v${{ github.event.inputs.version }}"
+
+      - name: "Create pull request"
+        uses: "peter-evans/create-pull-request@v7"
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Release prep v${{ github.event.inputs.version }}"
+          branch: "release-prep-v${{ github.event.inputs.version }}"
+          delete-branch: true
+          title: "Release prep v${{ github.event.inputs.version }}"
+          base: "main"
+          body: |
+            Automated release-prep for version v${{ github.event.inputs.version }} from commit ${{ github.sha }}.
+            
+            This PR includes:
+            - Version bump to v${{ github.event.inputs.version }}
+            - Updated CHANGELOG.md
+            - Verified tests pass
+            - Verified RuboCop passes
+            - Verified gem can be built
+          labels: "maintenance"
