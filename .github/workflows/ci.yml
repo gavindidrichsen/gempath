@@ -4,8 +4,7 @@ on:
   push:
     branches: [ 
       main, 
-      master, 
-      test-gh-pages-publish  # Special branch for testing GitHub Pages deployment
+      master
     ]
   pull_request:
     branches: [ main, master ]
@@ -61,13 +60,6 @@ jobs:
     permissions:
       contents: read        # Required for actions/checkout
       pull-requests: write  # Required for commenting on PRs
-      pages: write          # Required for GitHub Pages deployment
-      id-token: write       # Required for GitHub Pages deployment (OIDC)
-    env:
-      # DEPLOY_CONDITION controls when GitHub Pages deployment occurs.
-      # Production: main, master branches deploy automatically
-      # Testing: test-gh-pages-publish branch allows safe deployment testing without affecting production
-      DEPLOY_CONDITION: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/test-gh-pages-publish' }}
     steps:
     - uses: actions/checkout@v4
     
@@ -89,22 +81,6 @@ jobs:
         name: coverage-report-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main' }}
         path: coverage/
         retention-days: 30
-
-    - name: Setup Pages
-      if: env.DEPLOY_CONDITION == 'true'
-      uses: actions/configure-pages@v4
-
-    - name: Upload Pages artifact
-      if: env.DEPLOY_CONDITION == 'true'
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: coverage
-
-    - name: Deploy to GitHub Pages
-      if: env.DEPLOY_CONDITION == 'true'
-      uses: actions/deploy-pages@v4
-      with:
-        path: coverage
 
     - name: Comment on PR with coverage report location
       if: github.event_name == 'pull_request'
