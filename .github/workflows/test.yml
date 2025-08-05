@@ -1,0 +1,142 @@
+name: "Manual Test"
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to test'
+        required: false
+        default: 'main'
+        type: string
+      run_coverage:
+        description: 'Run coverage analysis'
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+  pull-requests: write  # For coverage comments
+
+jobs:
+  # Security check - only allow repository owners/collaborators
+  check-permissions:
+    runs-on: ubuntu-latest
+    outputs:
+      allowed: ${{ steps.check.outputs.allowed }}
+    steps:
+      - name: Check if user can trigger workflow
+        id: check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              const { data: permission } = await github.rest.repos.getCollaboratorPermissionLevel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                username: context.actor
+              });
+              
+              const allowedRoles = ['admin', 'maintain', 'write'];
+              const isAllowed = allowedRoles.includes(permission.permission);
+              
+              console.log(`User ${context.actor} has permission: ${permission.permission}`);
+              console.log(`Is allowed: ${isAllowed}`);
+              
+              core.setOutput('allowed', isAllowed);
+              
+              if (!isAllowed) {
+                core.setFailed(`User ${context.actor} does not have permission to run this workflow`);
+              }
+            } catch (error) {
+              console.log(`Error checking permissions: ${error}`);
+              core.setOutput('allowed', false);
+              core.setFailed('Failed to check user permissions');
+            }
+
+  test:
+    needs: check-permissions
+    if: needs.check-permissions.outputs.allowed == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby-version: ['3.1', '3.2']
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.inputs.branch || github.ref }}
+        fetch-depth: 1
+
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby-version }}
+        bundler-cache: true
+
+    - name: Bundle environment
+      run: |
+        echo ::group::bundler environment
+        bundle env
+        echo ::endgroup::
+
+    - name: Run RuboCop
+      run: bundle exec rubocop --format github
+
+    - name: Run tests
+      run: bundle exec rake spec
+
+  coverage:
+    needs: check-permissions
+    if: needs.check-permissions.outputs.allowed == 'true' && github.event.inputs.run_coverage == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.inputs.branch || github.ref }}
+        fetch-depth: 1
+
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.2'
+        bundler-cache: true
+
+    - name: Bundle environment
+      run: |
+        echo ::group::bundler environment
+        bundle env
+        echo ::endgroup::
+
+    - name: Run tests with coverage
+      run: bundle exec rake spec
+      env:
+        COVERAGE: true
+
+    - name: Upload coverage report artifact
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: coverage-report-manual-${{ github.run_number }}
+        path: coverage/
+        retention-days: 7  # Shorter retention for manual tests
+
+    - name: Coverage Summary
+      run: |
+        echo "## 📊 Coverage Report" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "Branch tested: \`${{ github.event.inputs.branch || github.ref }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "Ruby version: 3.2" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        if [ -f coverage/.last_run.json ]; then
+          echo "Coverage results available in artifacts." >> $GITHUB_STEP_SUMMARY
+        else
+          echo "⚠️ No coverage data generated." >> $GITHUB_STEP_SUMMARY
+        fi
