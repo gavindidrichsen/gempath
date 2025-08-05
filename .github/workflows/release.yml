@@ -1,0 +1,88 @@
+name: "Release"
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "The target for the release. This can be a commit sha or a branch."
+        required: false
+        default: "main"
+        type: "string"
+
+jobs:
+  release:
+    name: "Release"
+    runs-on: "ubuntu-latest"
+    # Ensure this only runs on your repository
+    if: github.repository_owner == 'gavindidrichsen'
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v4"
+        with:
+          ref: ${{ github.event.inputs.target }}
+          clean: true
+          fetch-depth: 0
+
+      - name: "Setup Ruby"
+        uses: "ruby/setup-ruby@v1"
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+
+      - name: "Bundle environment"
+        run: |
+          echo ::group::bundler environment
+          bundle env
+          echo ::endgroup::
+
+      - name: "Get version"
+        id: "get_version"
+        run: |
+          echo "version=$(ruby -e "require 'rubygems'; puts Gem::Specification::load(Dir.glob('*.gemspec').first).version.to_s")" >> $GITHUB_OUTPUT
+
+      - name: "Run tests before release"
+        run: |
+          bundle exec rake spec
+
+      - name: "Run RuboCop before release"
+        run: |
+          bundle exec rubocop
+
+      - name: "Build gem"
+        run: |
+          bundle exec rake build
+
+      - name: "Generate release notes"
+        run: |
+          export GH_HOST=github.com
+          gh extension install chelnak/gh-changelog || gh extension upgrade chelnak/gh-changelog
+          gh changelog get --latest > RELEASE_NOTES.md
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Create GitHub release"
+        run: |
+          gh release create v${{ steps.get_version.outputs.version }} ./pkg/*.gem --title "v${{ steps.get_version.outputs.version }}" -F RELEASE_NOTES.md
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: "Publish gem to rubygems.org"
+        run: |
+          gem push ./pkg/*.gem
+        env:
+          GEM_HOST_API_KEY: '${{ secrets.GEM_HOST_API_KEY }}'
+
+      - name: "Publish to GitHub Packages"
+        run: |
+          echo "Setting up access to GitHub Packages"
+          mkdir -p ~/.gem
+          touch ~/.gem/credentials
+          chmod 600 ~/.gem/credentials
+
+          echo "Configuring credentials for GitHub Package Registry"
+          echo "---" > ~/.gem/credentials
+          echo ":github: Bearer ${{ secrets.GITHUB_TOKEN }}" >> ~/.gem/credentials
+
+          echo "Pushing gem to GitHub Package Registry"
+          gem push --key "github" --host "https://rubygems.pkg.github.com/${{ github.repository_owner }}" ./pkg/*.gem
